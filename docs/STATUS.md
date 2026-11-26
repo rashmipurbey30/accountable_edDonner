@@ -4,3 +4,5 @@
 - 2026-11-26: `docs/spec.md` written: requirements, design and open concerns for the MVP.
 - 2026-11-26: Decided: deleting an organization deletes its deals (contacts kept); reopening a lost deal deletes its lost reason. `docs/intent.md` and `docs/spec.md` updated.
 - 2026-11-26: Brand colors adjusted for contrast: Cerulean `#0E7A9F`, Raspberry `#D33259`, muted ink `#4E6A75`, and text versions of all five colors added to the brand skill. `docs/spec.md` updated.
+- 2026-11-26: Three dashboard and pipeline mockups (A, B, C) in `docs/mockups/`, each with a Playwright screenshot.
+- 2026-11-26: Mockup B chosen; `docs/spec.md` updated with the choice, the reasons, and the top-bar layout, dashboard and five-column pipeline.

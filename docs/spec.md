@@ -14,6 +14,7 @@ Each concern says how this spec resolves it.
 6. **"Today" means the date on the computer running the backend.** Dates are stored without a time zone.
 7. **`docs/BRAND.md` doesn't exist.** `AGENTS.md` points to it for UI work, but the brand guidelines live in the brand skill. This spec uses the skill. Copying the skill into `docs/BRAND.md`, or fixing the pointer, would avoid confusion.
 8. **Sample data dates are relative to the day it's seeded**, so the dashboard and follow-ups always look current. Seeding again moves them.
+9. **Marigold and Coral are hard to tell apart.** Proposal (Marigold) and Negotiation (Coral) sit side by side in every chart and on the board, and a palette check found them too close even for normal color vision. Every place they appear also names the stage in text, so color is never the only cue.
 
 ## Requirements
 
@@ -71,7 +72,7 @@ Requirement IDs are used by the tests.
 
 ### Pipeline
 
-- **P1** One column per stage, in order: New, Qualified, Proposal, Negotiation, Won, Lost. Each column header shows the stage name, its number of deals, its total value and its expected revenue (value × probability).
+- **P1** One column for each open stage, in order: New, Qualified, Proposal, Negotiation. A fifth column holds Won above Lost, each with its own header and its own drop area (see Design choice). Each header shows the stage name, its number of deals, its total value and its expected revenue (value × probability).
 - **P2** Won and Lost show only deals with a close date in the last 30 days, including today. Their headers count and total only the deals shown.
 - **P3** Above the board: total value and expected revenue of all open deals, and the number of open deals.
 - **P4** A card shows the deal name, organization, value, close date, probability, main contact's initials, and the Late badge if late. Clicking a card opens the deal's page.
@@ -92,12 +93,12 @@ Requirement IDs are used by the tests.
 ### Dashboard
 
 - **H1** The dashboard covers a rolling 12 months: the current month and the 11 before it. It has no date picker.
-- **H2** A row of four figures: revenue won in the last 12 months, deals won in the last 12 months, open pipeline value, expected revenue of the open pipeline. Each figure has a small sparkline or comparison where it helps.
-- **H3** A line chart of revenue won per month over the 12 months, by Won deals' close date.
+- **H2** Headline figures: revenue won in the last 12 months (the largest figure on the page), deals won, win rate (won ÷ won and lost), average deal won and deals lost. With the pipeline visual: open pipeline value, expected revenue, number of open deals and how many are late.
+- **H3** A bar chart of revenue won per month over the 12 months, by Won deals' close date, and a line chart of the running total of revenue won over the same months. One short sentence names the best month, for example "April was the best month, with US$41,500 from two deals."
 - **H4** A bar chart of deals won per month, with deals lost per month beside them.
 - **H5** A pipeline visual: a funnel of value reaching each stage, New to Won, for deals created in the 12 months. A deal counts towards every stage up to the furthest it has reached, Lost deals included up to the stage they reached before Lost.
-- **H6** Open pipeline by stage: a horizontal stacked bar of open value split by stage, with expected revenue.
-- **H7** Follow-ups: overdue ones first, Raspberry, oldest first; then those due in the next 14 days. Each shows the description, its contact or deal, the date, and a done checkbox. Shows at most 10, with "Show all" opening the full list.
+- **H6** Open pipeline by stage: a horizontal stacked bar of open value split by stage, labelled with each stage's name and value, and a bar per stage showing its value with the expected part solid.
+- **H7** Follow-ups: overdue ones first, under an "Overdue" heading with a Raspberry tint and a count by the panel title, oldest first; then those due in the next 14 days, under their own heading. Each shows the description, its contact or deal, the date, and a done checkbox. Shows at most 10, with "Show all" opening the full list.
 - **H8** Recent activity: the 10 newest activities and stage-change entries across everything, each linking to its record.
 - **H9** Every figure matches the data. Marking a deal Won or adding a follow-up shows on the dashboard as soon as you go back to it.
 
@@ -210,12 +211,28 @@ Routes: `/` dashboard, `/organizations`, `/organizations/:id`, `/contacts`, `/co
 
 One `DataTable` component, built on TanStack Table in manual mode, serves all three lists. The stage list, labels, colors and usual probabilities live in one shared constants file in the frontend and one in the backend, and a test checks they match.
 
+### Design choice
+
+Three mockups of the dashboard and pipeline are in `docs/mockups/`, each with a screenshot: A (the first draft of this spec, with a Midnight sidebar), B (a Midnight top bar) and C (a light sidebar, opening with what needs attention). **B was chosen** on 26 Nov 2026. The reasons:
+
+- **The board gets the full width.** With no sidebar, and Won and Lost sharing one column, the pipeline fits five columns on a 1280px screen without scrolling sideways, and cards have room for a deal name and its value on one line.
+- **It answers "how are sales going?" first.** Revenue won is the largest thing on the dashboard, with the figures that explain it (deals won, win rate, average deal) beside it and the months behind it in a bar chart.
+- **What needs doing stays in view.** Follow-ups and recent activity sit in a column on the right, beside the figures rather than below them, with overdue follow-ups grouped and tinted so they're hard to miss.
+- **The pipeline is shown in one place.** Open value, expected revenue, late deals, the split by stage and the funnel sit together in one panel, which is the "visual of the pipeline" the intent asks for.
+- **Closed deals stay secondary.** Won and Lost show only the last 30 days and usually hold a few deals, so they share a column as short rows, while open deals get full cards.
+
+What changes from the first draft, and what B's mockup shows that the MVP leaves out:
+
+- The pipeline has five columns, with Won above Lost in the last one (P1). Both stay drop targets. Won scrolls inside its own area after five rows, so Lost is always in reach while dragging.
+- Revenue won by month is a bar chart, and the line chart shows the running total (H3).
+- The mockup's search box in the top bar, and the board's "Filter this board" box and "Late only" chip, aren't in the intent, so they're not in the MVP. The top bar keeps that space empty for now.
+
 ### Layout
 
-- A fixed sidebar on the left, 232px wide, with a Midnight `#073B4C` background, the Accountable wordmark at the top, and the five sections with Lucide icons: Dashboard, Organizations, Contacts, Deals, Pipeline. Labels are Sea Mist `#CDD8DB`. The current section has a Sea Green pill behind it with Midnight text.
+- A top bar across the page, 64px tall, with a Midnight `#073B4C` background: the Accountable logo and wordmark on the left, then the five sections with Lucide icons: Dashboard, Organizations, Contacts, Deals, Pipeline. Labels are Sea Mist `#CDD8DB`. The current section has a soft Sea Green fill (16%) behind it, white text and a Sea Green icon.
 - The main area has the page background `#F0F4F5`, 32px padding, and a page header: the title (Instrument Sans, 28px, semibold, Midnight) and the page's main action on the right.
 - Content sits in white panels with 12px corners, no outline and a very soft shadow (`0 1px 2px rgb(7 59 76 / 0.06)`). No border on one edge, no line across the top of the page.
-- Designed for screens 1280px wide and up. Narrower than that, the sidebar collapses to icons. Wide tables scroll sideways inside their panel.
+- Designed for screens 1280px wide and up. Narrower than that, the section labels in the top bar hide and only their icons show. Wide tables scroll sideways inside their panel.
 
 ### Colors
 
@@ -264,7 +281,12 @@ Primary buttons are Sea Green with Midnight text. Secondary buttons are white wi
 
 ### Screens
 
-**Dashboard.** Greeting line in Instrument Serif. Row 1: four figure panels (H2), each with the figure large in JetBrains Mono, its label above, and a small sparkline. Row 2: revenue line chart (two-thirds width) beside the funnel (one-third). Row 3: deals won and lost bar chart beside the open pipeline by stage bar. Row 4: follow-ups beside recent activity. Charts have hover tooltips showing the exact value with currency.
+**Dashboard** (`docs/mockups/b-dashboard.png`). Page header with the title and "Last 12 months · Dec 2025 to Nov 2026" on the right. Below, a main area and a 380px right-hand column.
+- Main area, first panel: on the left, "Revenue won, last 12 months" with the figure at 44px in JetBrains Mono, the best-month sentence in Instrument Serif, and four smaller figures (deals won, win rate, average deal won, deals lost). On the right, the revenue by month bar chart.
+- Main area, second panel, "Pipeline": open pipeline, expected revenue and open deals with a "3 late" badge; the stacked bar by stage; the per-stage bars. To the right, the funnel. An "Open the board" link goes to the pipeline.
+- Main area, third row: the running total line chart beside the deals won and lost bar chart.
+- Right-hand column: follow-ups (H7) with "Show all", then recent activity as a vertical feed with a type icon per entry.
+- Charts have hover tooltips showing the exact value with currency.
 
 **Lists.** Page header with title and "Add" button. One panel holding a toolbar (search box on the left; on Contacts, the status filter as a segmented control with counts) then the table, then the paging bar. Rows are 48px tall with dividers, a hover tint of `#F0F4F5`, and a "⋯" menu at the end with Edit and Delete.
 
@@ -272,7 +294,7 @@ Primary buttons are Sea Green with Midnight text. Secondary buttons are white wi
 
 **Timeline.** A vertical list. Each entry has a round icon in a tint of its type color (note: Marigold, call: Sea Green, email: Cerulean, stage change: Midnight tint), the description, the date in muted text, and for activities a "⋯" menu with Edit and Delete. Follow-ups show "Follow up 14 Mar 2026" with a checkbox; overdue ones in Raspberry text.
 
-**Pipeline.** Board totals in a panel at the top. Six columns, 280px wide, on the page background, scrolling sideways if the screen is narrow. Each column header has a 10px dot in the stage color, the stage name, the deal count, total value and expected revenue. Cards are white, 10px corners, with the deal name in semibold, organization in muted text, value in JetBrains Mono, close date and probability on the bottom line, and the main contact's initials in a small round badge. A dragged card lifts with a stronger shadow and a 2° tilt; the drop place shows as a dashed outline. "Add deal" sits at the bottom of each column. Won and Lost headers say "Last 30 days" under the name.
+**Pipeline** (`docs/mockups/b-pipeline.png`). Page header with the title and "Add deal" on the right. Below, a panel with open pipeline, expected revenue, open deals and the stacked bar by stage. Then five columns that share the width. Each column sits on a faint Midnight tint (3.5%) with 12px corners. Its header is a block tinted in the stage color, with the stage name, the deal count, total value and expected revenue. Open deals are white cards, 10px corners: the deal name in semibold with the value (short form) on the same line, the organization in muted text, a 4px probability bar in the stage color, and a bottom line with the Late badge if late, the close date (Raspberry text version when late), the probability and the main contact's initials. The fifth column holds Won and Lost, each with its own tinted header, a short row per deal (name, value, organization, close date, and the lost reason for Lost), and its own "Add deal", with a note under them: "Won and Lost show deals closed in the last 30 days. Every closed deal is in the Deals table." A dragged card lifts with a stronger shadow and a 2° tilt; the drop place shows as a dashed outline. "Add deal" sits at the bottom of each column.
 
 **Dialogs.** Centered, 480px wide (deal form 560px), white, 16px corners. Title, fields with labels above, checks shown under the field in Raspberry text version, Cancel and the main action at the bottom right. Escape closes. The first field has focus when it opens.
 

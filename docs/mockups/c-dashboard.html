@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup C: Dashboard · Accountable</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="c.css">
+<script src="mock.js"></script>
+</head>
+<body>
+<div class="app">
+  <nav class="side" id="side"></nav>
+  <main class="main">
+    <header class="hello">
+      <div>
+        <h1>Good morning.</h1>
+        <p>Thursday 26 November 2026. Three follow-ups are overdue and three deals are past their close date.</p>
+      </div>
+      <span class="muted" style="font-size:13px">Figures cover the last 12 months</span>
+    </header>
+
+    <section class="attention" id="attention"></section>
+
+    <section class="grid g-main">
+      <div class="panel card">
+        <div class="card-head">
+          <div><h2 class="panel-title">Revenue won</h2><p class="panel-sub">By month, Dec 2025 to Nov 2026</p></div>
+        </div>
+        <div class="figs" id="figs"></div>
+        <div id="line"></div>
+      </div>
+      <div class="panel card">
+        <div class="card-head">
+          <div><h2 class="panel-title">Sales funnel</h2><p class="panel-sub">Value that reached each stage</p></div>
+        </div>
+        <div id="funnel" style="margin-top:8px"></div>
+      </div>
+    </section>
+
+    <section class="grid g-2">
+      <div class="panel card">
+        <div class="card-head">
+          <div><h2 class="panel-title">Open pipeline</h2><p class="panel-sub" id="pipesub"></p></div>
+          <a class="att-go">Open the board</a>
+        </div>
+        <div id="strip"></div>
+        <div id="stagebars" style="margin-top:18px"></div>
+      </div>
+      <div class="panel card">
+        <div class="card-head">
+          <div><h2 class="panel-title">Deals won and lost</h2><p class="panel-sub">Deals closed each month</p></div>
+          <div class="legend"><span><i style="background:#06D6A0"></i>Won</span><span><i style="background:#F78C6B"></i>Lost</span></div>
+        </div>
+        <div id="bars"></div>
+      </div>
+    </section>
+
+    <section class="grid g-2">
+      <div class="panel card">
+        <div class="card-head">
+          <h2 class="panel-title">Follow-ups</h2>
+          <div class="tabs"><span class="on">Due</span><span>Done</span></div>
+        </div>
+        <ul class="list" id="follow"></ul>
+      </div>
+      <div class="panel card">
+        <div class="card-head"><h2 class="panel-title">Recent activity</h2></div>
+        <ul class="list" id="recent"></ul>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+ready(() => {
+  document.getElementById("side").innerHTML = sideNav("dashboard", "c-");
+
+  const late = DEALS.filter((d) => d.late);
+  const soonEnd = new Date(2026, 11, 26);
+  const soon = DEALS.filter((d) => OPEN.includes(d.stage) && !d.late && d.close >= TODAY && d.close <= soonEnd);
+  document.getElementById("attention").innerHTML = [
+    { bg: "rgb(211 50 89 / 0.09)", ic: "#C0264E", icbg: "rgb(211 50 89 / 0.14)", i: "calendar",
+      v: 3, l: "Overdue follow-ups", s: "Oldest from 19 Nov 2026", go: "See them" },
+    { bg: "rgb(247 140 107 / 0.14)", ic: "#B0472A", icbg: "rgb(247 140 107 / 0.22)", i: "alert",
+      v: late.length, l: "Late deals", s: `${usd(late.reduce((t, d) => t + d.value, 0))} past the close date`, go: "Review" },
+    { bg: "rgb(6 214 160 / 0.12)", ic: "#037A5C", icbg: "rgb(6 214 160 / 0.2)", i: "deals",
+      v: soon.length, l: "Closing in 30 days", s: `${usd(soon.reduce((t, d) => t + d.value, 0))} in value`, go: "Open deals" },
+  ].map((a) => `<div class="att" style="background:${a.bg}">
+      <span class="att-icon" style="background:${a.icbg};color:${a.ic}">${icon(a.i, 22)}</span>
+      <div><div class="att-value num">${a.v}</div><div class="att-label">${a.l}</div><div class="att-sub">${a.s}</div></div>
+      <a class="att-go">${a.go}</a></div>`).join("");
+
+  document.getElementById("figs").innerHTML = [
+    ["Revenue won", usd(FIG.revenue12)], ["Deals won", FIG.won12], ["Win rate", FIG.winRate + "%"], ["Average deal won", usd(FIG.revenue12 / FIG.won12)],
+  ].map(([l, v]) => `<div><div class="fig-label">${l}</div><div class="fig-value num">${v}</div></div>`).join("");
+  lineChart(document.getElementById("line"), { height: 230 });
+  funnelTaper(document.getElementById("funnel"), { height: 300 });
+
+  document.getElementById("pipesub").textContent = `${usd(FIG.openValue)} across ${FIG.openCount} deals, ${usd(FIG.openExpected)} expected`;
+  stageStrip(document.getElementById("strip"), { height: 16 });
+  stageBars(document.getElementById("stagebars"), { rowH: 28, gap: 16 });
+  wonLostBars(document.getElementById("bars"), { height: 250 });
+
+  document.getElementById("follow").innerHTML = FOLLOW_UPS.slice(0, 6).map((f) => `<li class="row">
+      <span class="check"></span>
+      <div class="row-body"><div class="row-text">${f.text}</div><div class="row-meta"><a class="link">${f.on}</a></div></div>
+      <span class="when num ${f.overdue ? "over" : ""}">${f.overdue ? "Overdue · " : ""}${f.date}</span></li>`).join("");
+  document.getElementById("recent").innerHTML = RECENT.slice(0, 6).map((r) => `<li class="row">
+      <span class="act" style="background:${ACT_STYLE[r.type].bg};color:${ACT_STYLE[r.type].fg}">${icon(r.type, 14)}</span>
+      <div class="row-body"><div class="row-text">${r.text}</div><div class="row-meta"><a class="link">${r.on}</a></div></div>
+      <span class="when num">${r.when}</span></li>`).join("");
+});
+</script>
+</body>
+</html>

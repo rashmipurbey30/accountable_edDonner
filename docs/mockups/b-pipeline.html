@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup B: Pipeline · Accountable</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="b.css">
+<script src="mock.js"></script>
+</head>
+<body>
+<header class="top" id="top"></header>
+<main class="main">
+  <div class="page-head">
+    <h1>Pipeline</h1>
+    <div class="toolbar">
+      <div class="field">${icon}</div>
+      <span class="chip" id="late-chip"></span>
+      <button class="btn btn-primary" id="add"></button>
+    </div>
+  </div>
+
+  <section class="panel board-figs">
+    <div><div class="stat-label">Open pipeline</div><div class="stat-value num" id="sv"></div></div>
+    <div><div class="stat-label">Expected revenue</div><div class="stat-value num" id="se"></div></div>
+    <div><div class="stat-label">Open deals</div><div class="stat-value num" id="sc"></div></div>
+    <div class="strip" id="strip"></div>
+  </section>
+
+  <section class="board" id="board"></section>
+</main>
+<script>
+ready(() => {
+  document.getElementById("top").innerHTML = sideNav("pipeline", "b-") +
+    `<div class="search">${icon("search", 16)}Search deals, contacts, organizations</div>`;
+  document.querySelector(".field").innerHTML = `${icon("search", 16)}Filter this board`;
+  document.getElementById("late-chip").innerHTML = `<span class="dot" style="background:#D33259;width:8px;height:8px"></span>Late only`;
+  document.getElementById("add").innerHTML = `${icon("plus", 16)}Add deal`;
+  document.getElementById("sv").textContent = usd(FIG.openValue);
+  document.getElementById("se").textContent = usd(FIG.openExpected);
+  document.getElementById("sc").textContent = FIG.openCount;
+  stageStrip(document.getElementById("strip"), { height: 14, labels: false });
+
+  const tint = (hex, a) => {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgb(${n >> 16} ${(n >> 8) & 255} ${n & 255} / ${a})`;
+  };
+  const card = (d) => {
+    const st = stage(d.stage);
+    return `<article class="deal">
+      <div class="deal-top"><span class="deal-name">${d.name}</span><span class="deal-value num">${usdShort(d.value)}</span></div>
+      <div class="deal-org">${d.org}</div>
+      <div class="prob" title="${d.p}% probability"><div style="width:${d.p}%;background:${st.color}"></div></div>
+      <div class="deal-foot">${d.late ? '<span class="badge badge-late">Late</span>' : ""}
+        <span class="num" style="${d.late ? "color:#C0264E;font-weight:600" : ""}">${dateShort(d.close)}</span>
+        <span class="num">· ${d.p}%</span><span class="avatar" title="${d.contact}">${d.who}</span></div>
+    </article>`;
+  };
+  const head = (st, light = 0.16) => {
+    const t = stageTotals(st.key);
+    return `<div class="col-head" style="background:${tint(st.color, st.key === "new" ? 0.45 : light)}">
+      <div class="col-name"><span>${st.name}</span><span class="n">${t.count} ${t.count === 1 ? "deal" : "deals"}</span></div>
+      <div class="col-figs"><span class="num">${usd(t.value)}</span>${["won", "lost"].includes(st.key) ? "" : `<span class="num muted">exp. ${usdShort(t.expected)}</span>`}</div>
+    </div>`;
+  };
+
+  const open = OPEN.map((k) => {
+    const st = stage(k);
+    return `<div class="col">${head(st)}<div class="cards">${byStage(k).map(card).join("")}</div>
+      <a class="add">${icon("plus", 14)}Add deal</a></div>`;
+  });
+  const closedRow = (d) => `<div class="closed-row">
+      <div class="top-line"><span>${d.name}</span><span class="num">${usdShort(d.value)}</span></div>
+      <div class="meta">${d.org} · <span class="num">${dateShort(d.close)}</span></div>
+      ${d.lostReason ? `<div class="meta" style="color:#C0264E">${d.lostReason}</div>` : ""}</div>`;
+  const closed = `<div class="closed">
+    <div class="col">${head(stage("won"), 0.22)}${byStage("won").map(closedRow).join("")}
+      <a class="add">${icon("plus", 14)}Add deal</a></div>
+    <div class="col">${head(stage("lost"), 0.12)}${byStage("lost").map(closedRow).join("")}
+      <a class="add">${icon("plus", 14)}Add deal</a></div>
+    <p class="muted" style="font-size:12px;margin:0 4px">Won and Lost show deals closed in the last 30 days. Every closed deal is in the Deals table.</p>
+  </div>`;
+  document.getElementById("board").innerHTML = open.join("") + closed;
+});
+</script>
+</body>
+</html>

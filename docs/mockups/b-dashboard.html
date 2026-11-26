@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup B: Dashboard · Accountable</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="b.css">
+<script src="mock.js"></script>
+</head>
+<body>
+<header class="top" id="top"></header>
+<main class="main">
+  <div class="page-head">
+    <h1>Dashboard</h1>
+    <span class="muted">Last 12 months · Dec 2025 to Nov 2026</span>
+  </div>
+
+  <div class="layout">
+    <div class="stack">
+      <section class="panel card hero">
+        <div>
+          <div class="hero-label">Revenue won, last 12 months</div>
+          <div class="hero-value num" id="rev"></div>
+          <p class="hero-quote">April was the best month, with US$41,500 from two deals.</p>
+          <div class="hero-stats" id="stats"></div>
+        </div>
+        <div>
+          <div class="card-head" style="margin-bottom:6px">
+            <div><h2 class="panel-title">Revenue won by month</h2><p class="panel-sub">From the close date of won deals</p></div>
+          </div>
+          <div id="revbars"></div>
+        </div>
+      </section>
+
+      <section class="panel card">
+        <div class="card-head">
+          <div><h2 class="panel-title">Pipeline</h2><p class="panel-sub">Open deals today, and how value moved through the stages over 12 months</p></div>
+          <a class="btn btn-ghost">Open the board</a>
+        </div>
+        <div class="pipe-grid">
+          <div>
+            <div class="pipe-figs" id="pipefigs"></div>
+            <div id="strip"></div>
+            <div style="margin-top:22px" id="stagebars"></div>
+          </div>
+          <div>
+            <div class="stat-label" style="margin-bottom:12px">Funnel · value that reached each stage</div>
+            <div id="funnel"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="two">
+        <div class="panel card">
+          <div class="card-head">
+            <div><h2 class="panel-title">Running total</h2><p class="panel-sub">Revenue won, added up month by month</p></div>
+          </div>
+          <div id="cumline"></div>
+        </div>
+        <div class="panel card">
+          <div class="card-head">
+            <div><h2 class="panel-title">Deals won and lost</h2><p class="panel-sub">Deals closed each month</p></div>
+            <div class="legend"><span><i style="background:#06D6A0"></i>Won</span><span><i style="background:#F78C6B"></i>Lost</span></div>
+          </div>
+          <div id="wonlost"></div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="stack rail">
+      <section class="panel card">
+        <div class="card-head">
+          <h2 class="panel-title section-title">Follow-ups <span class="count-pill alert num">3 overdue</span></h2>
+          <a class="btn btn-ghost">Show all</a>
+        </div>
+        <div class="group-label overdue">Overdue</div>
+        <div id="fu-over"></div>
+        <div class="group-label">Next 14 days</div>
+        <div id="fu-next"></div>
+      </section>
+      <section class="panel card">
+        <div class="card-head"><h2 class="panel-title">Recent activity</h2></div>
+        <ul class="feed" id="feed"></ul>
+      </section>
+    </aside>
+  </div>
+</main>
+<script>
+ready(() => {
+  document.getElementById("top").innerHTML = sideNav("dashboard", "b-") +
+    `<div class="search">${icon("search", 16)}Search deals, contacts, organizations</div>`;
+  document.getElementById("rev").textContent = usd(FIG.revenue12);
+  document.getElementById("stats").innerHTML = [
+    ["Deals won", FIG.won12], ["Win rate", FIG.winRate + "%"],
+    ["Average deal won", usd(FIG.revenue12 / FIG.won12)], ["Deals lost", FIG.lost12],
+  ].map(([l, v]) => `<div><div class="stat-label">${l}</div><div class="stat-value num">${v}</div></div>`).join("");
+  revenueBars(document.getElementById("revbars"), { height: 240 });
+
+  document.getElementById("pipefigs").innerHTML = [
+    ["Open pipeline", usd(FIG.openValue)], ["Expected revenue", usd(FIG.openExpected)],
+    ["Open deals", `${FIG.openCount} <span class="badge badge-soft-late" style="font-family:var(--sans);vertical-align:3px">${FIG.lateCount} late</span>`],
+  ].map(([l, v]) => `<div><div class="stat-label">${l}</div><div class="stat-value num">${v}</div></div>`).join("");
+  stageStrip(document.getElementById("strip"), { height: 22 });
+  stageBars(document.getElementById("stagebars"), { rowH: 22, gap: 14 });
+  funnelBars(document.getElementById("funnel"), { rowH: 30, gap: 12, centered: true });
+
+  let run = 0;
+  const cum = REVENUE.map((v) => (run += v));
+  lineChart(document.getElementById("cumline"), { values: cum, height: 220 });
+  wonLostBars(document.getElementById("wonlost"), { height: 220 });
+
+  const fu = (f) => `<div class="fu ${f.overdue ? "overdue" : ""}"><span class="check"></span>
+    <div style="flex:1;min-width:0"><div class="fu-text">${f.text}</div>
+    <div class="fu-meta"><a class="link">${f.on}</a><span class="num fu-date">${f.date}</span></div></div></div>`;
+  document.getElementById("fu-over").innerHTML = FOLLOW_UPS.filter((f) => f.overdue).map(fu).join("");
+  document.getElementById("fu-next").innerHTML = FOLLOW_UPS.filter((f) => !f.overdue).map(fu).join("");
+  document.getElementById("feed").innerHTML = RECENT.map((r) => `<li>
+    <span class="act" style="background:${ACT_STYLE[r.type].bg};color:${ACT_STYLE[r.type].fg}">${icon(r.type, 14)}</span>
+    <div><div class="feed-text">${r.text}</div><div class="feed-meta"><a class="link">${r.on}</a> · <span class="num">${r.when}</span></div></div></li>`).join("");
+});
+</script>
+</body>
+</html>

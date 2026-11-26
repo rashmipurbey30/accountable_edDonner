@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup A: Dashboard · Accountable</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="a.css">
+<script src="mock.js"></script>
+</head>
+<body>
+<div class="app">
+  <nav class="side" id="side"></nav>
+  <main class="main">
+    <header class="page-head">
+      <div>
+        <p class="greeting">Good morning. Here's how sales are going.</p>
+        <h1>Dashboard</h1>
+      </div>
+      <span class="muted range">Last 12 months · Dec 2025 to Nov 2026</span>
+    </header>
+
+    <section class="kpis" id="kpis"></section>
+
+    <section class="row row-2-1">
+      <div class="panel card">
+        <div class="card-head">
+          <div><h2 class="panel-title">Revenue won</h2><p class="panel-sub">By month, from the close date of won deals</p></div>
+        </div>
+        <div id="line"></div>
+      </div>
+      <div class="panel card">
+        <div class="card-head">
+          <div><h2 class="panel-title">Sales funnel</h2><p class="panel-sub">Value that reached each stage, deals created in the last 12 months</p></div>
+        </div>
+        <div id="funnel"></div>
+      </div>
+    </section>
+
+    <section class="row row-1-1">
+      <div class="panel card">
+        <div class="card-head">
+          <div><h2 class="panel-title">Deals won and lost</h2><p class="panel-sub">Number of deals closed each month</p></div>
+          <div class="legend"><span><i style="background:#06D6A0"></i>Won</span><span><i style="background:#F78C6B"></i>Lost</span></div>
+        </div>
+        <div id="bars"></div>
+      </div>
+      <div class="panel card">
+        <div class="card-head">
+          <div><h2 class="panel-title">Open pipeline by stage</h2><p class="panel-sub">Full value, with the expected part shown solid</p></div>
+        </div>
+        <div id="stagebars" style="margin-top:12px"></div>
+      </div>
+    </section>
+
+    <section class="row row-1-1">
+      <div class="panel card">
+        <div class="card-head">
+          <div><h2 class="panel-title">Follow-ups</h2><p class="panel-sub">Overdue first, then the next 14 days</p></div>
+          <a class="btn btn-ghost">Show all</a>
+        </div>
+        <ul class="list" id="follow"></ul>
+      </div>
+      <div class="panel card">
+        <div class="card-head">
+          <div><h2 class="panel-title">Recent activity</h2><p class="panel-sub">Across all contacts and deals</p></div>
+        </div>
+        <ul class="list" id="recent"></ul>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+ready(() => {
+  document.getElementById("side").innerHTML = sideNav("dashboard", "a-");
+
+  const kpis = [
+    ["Revenue won", usd(FIG.revenue12), `${FIG.won12} deals won`, REVENUE, false],
+    ["Deals won", FIG.won12, `${FIG.winRate}% of closed deals`, WON, true],
+    ["Open pipeline", usd(FIG.openValue), `${FIG.openCount} open deals · ${FIG.lateCount} late`, null],
+    ["Expected revenue", usd(FIG.openExpected), "Open value × probability", null],
+  ];
+  document.getElementById("kpis").innerHTML = kpis.map(([l, v, sub], i) =>
+    `<div class="panel kpi"><div class="kpi-label">${l}</div><div class="kpi-value num">${v}</div>
+     <div class="kpi-foot"><span class="muted">${sub}</span><div class="spark" id="spark${i}"></div></div></div>`).join("");
+  sparkline(document.getElementById("spark0"), REVENUE);
+  sparkline(document.getElementById("spark1"), WON, { bars: true, color: "#06D6A0" });
+  stageStrip(document.getElementById("spark2"), { height: 10, labels: false });
+  const ex = document.getElementById("spark3");
+  ex.innerHTML = `<div class="meter"><div style="width:${(FIG.openExpected / FIG.openValue) * 100}%"></div></div>
+    <div class="meter-cap num muted">${Math.round((FIG.openExpected / FIG.openValue) * 100)}% of open value</div>`;
+
+  lineChart(document.getElementById("line"), { height: 260 });
+  funnelBars(document.getElementById("funnel"), { rowH: 32, gap: 14 });
+  wonLostBars(document.getElementById("bars"), { height: 220 });
+  stageBars(document.getElementById("stagebars"), { rowH: 30, gap: 22 });
+
+  document.getElementById("follow").innerHTML = FOLLOW_UPS.slice(0, 6).map((f) => `
+    <li class="item">
+      <span class="check"></span>
+      <div class="item-body"><div class="item-text">${f.text}</div>
+        <div class="item-meta muted">${f.kind === "deal" ? "Deal" : "Contact"} · <a class="link">${f.on}</a></div></div>
+      <span class="num date ${f.overdue ? "overdue" : ""}">${f.overdue ? icon("alert", 14) : ""}${f.date}</span>
+    </li>`).join("");
+  document.getElementById("recent").innerHTML = RECENT.slice(0, 6).map((r) => `
+    <li class="item">
+      <span class="act" style="background:${ACT_STYLE[r.type].bg};color:${ACT_STYLE[r.type].fg}">${icon(r.type, 14)}</span>
+      <div class="item-body"><div class="item-text">${r.text}</div>
+        <div class="item-meta muted"><a class="link">${r.on}</a></div></div>
+      <span class="num date muted">${r.when}</span>
+    </li>`).join("");
+});
+</script>
+</body>
+</html>

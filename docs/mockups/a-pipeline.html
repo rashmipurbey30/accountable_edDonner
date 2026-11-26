@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup A: Pipeline · Accountable</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="a.css">
+<script src="mock.js"></script>
+</head>
+<body>
+<div class="app">
+  <nav class="side" id="side"></nav>
+  <main class="main">
+    <header class="page-head">
+      <h1>Pipeline</h1>
+      <button class="btn btn-primary">Add deal</button>
+    </header>
+
+    <section class="panel board-summary">
+      <div><div class="sum-label">Open pipeline</div><div class="sum-value num" id="sv"></div></div>
+      <div><div class="sum-label">Expected revenue</div><div class="sum-value num" id="se"></div></div>
+      <div><div class="sum-label">Open deals</div><div class="sum-value num" id="sc"></div></div>
+      <div class="strip" id="strip"></div>
+    </section>
+
+    <section class="board" id="board"></section>
+  </main>
+</div>
+<script>
+ready(() => {
+  document.getElementById("side").innerHTML = sideNav("pipeline", "a-");
+  document.getElementById("sv").textContent = usd(FIG.openValue);
+  document.getElementById("se").textContent = usd(FIG.openExpected);
+  document.getElementById("sc").textContent = FIG.openCount;
+  stageStrip(document.getElementById("strip"), { height: 12 });
+
+  const card = (d, extra = "") => `
+    <article class="deal ${extra}">
+      <div class="deal-name">${d.name}</div>
+      <div class="deal-org">${d.org}</div>
+      <div class="deal-row"><span class="deal-value num">${usd(d.value)}</span>
+        ${d.late ? '<span class="badge badge-late">Late</span>' : ""}</div>
+      ${d.lostReason ? `<div class="lost-reason">${d.lostReason}</div>` : ""}
+      <div class="deal-foot"><span class="num">${dateShort(d.close)}</span><span class="num">· ${d.p}%</span>
+        <span class="avatar" title="${d.contact}">${d.who}</span></div>
+    </article>`;
+
+  document.getElementById("board").innerHTML = STAGES.map((st) => {
+    const t = stageTotals(st.key);
+    const closed = st.key === "won" || st.key === "lost";
+    let cards = byStage(st.key).map((d) => card(d));
+    // A drag in progress: the card's old place in Proposal is a dashed slot
+    if (st.key === "proposal") cards[1] = '<div class="drop-slot" id="from"></div>';
+    return `<div class="col">
+      <div class="col-head">
+        <div class="col-title"><span class="dot" style="background:${st.color}"></span>${st.name}<span class="count num">${t.count}</span></div>
+        ${closed ? '<div class="col-sub">Last 30 days</div>' : ""}
+        <div class="col-figs"><span class="num">${usdShort(t.value)}</span>${closed ? "" : `<span class="num muted">exp. ${usdShort(t.expected)}</span>`}</div>
+      </div>
+      <div class="cards">${cards.join("")}
+        <a class="add-deal">${icon("plus", 14)}Add deal</a></div>
+    </div>`;
+  }).join("");
+
+  // The dragged card, lifted and tilted over the Negotiation column
+  const from = document.getElementById("from");
+  const target = document.querySelectorAll(".col")[3].querySelectorAll(".deal")[1];
+  const ghost = document.createElement("div");
+  ghost.innerHTML = card(byStage("proposal")[1], "dragging");
+  const g = ghost.firstElementChild;
+  const r = target.getBoundingClientRect();
+  Object.assign(g.style, { position: "absolute", width: from.offsetWidth + "px", left: r.left + 18 + "px", top: r.top + window.scrollY - 26 + "px", zIndex: 5 });
+  document.body.appendChild(g);
+});
+</script>
+</body>
+</html>
