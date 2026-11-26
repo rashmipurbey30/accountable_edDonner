@@ -18,7 +18,7 @@ Accountable is a business management system: a sales CRM that will grow into a f
 
 Every table has a search box, columns you can sort by clicking their headings, paging, a way to add a new record, and edit and delete on each row. That's how we add a new deal, a new lead or a new customer. Deleting asks first, and says what will happen to the records linked to the one being deleted:
 
-- Deleting an organization keeps its contacts and deals; they are left with no organization.
+- Deleting an organization deletes its deals, and the activities logged on them. Its contacts are kept, with no organization.
 - Deleting a contact keeps its deals (with no main contact) and deletes the activities logged on that contact.
 - Deleting a deal deletes the activities logged on that deal.
 
@@ -26,7 +26,7 @@ From any contact or deal you can log an activity (a note, call or email) and giv
 
 An activity logged on a deal also appears in the timeline of that deal's main contact. An activity logged on a contact appears only on that contact.
 
-When a deal moves to Won or Lost, its close date becomes today (it can still be edited). Moving a deal to Lost asks for an optional short lost reason, shown on the deal and in its "Moved to Lost" timeline entry.
+When a deal moves to Won or Lost, its close date becomes today (it can still be edited). Moving a deal to Lost asks for an optional short lost reason, shown on the deal and in its "Moved to Lost" timeline entry. If a lost deal is reopened (moved to any other stage), its lost reason is deleted from the deal; the "Moved to Lost" timeline entry keeps it.
 
 ### Four kinds of record
 
@@ -60,7 +60,7 @@ The look follows Accountable's brand guidelines, which take priority over any ge
 ## Success criteria
 
 1. Someone non-technical can start Accountable with the one documented command, open it in a browser and land on the dashboard, with sample data on every screen.
-2. Organizations, contacts (leads, qualified contacts and customers) and deals can each be added, found by searching, sorted, edited and deleted from their tables, and every change is still there after a refresh and after a restart. Deleting asks first, and an organization's contacts and deals survive its deletion. The reset command brings back the sample data.
+2. Organizations, contacts (leads, qualified contacts and customers) and deals can each be added, found by searching, sorted, edited and deleted from their tables, and every change is still there after a refresh and after a restart. Deleting asks first. Deleting an organization deletes its deals and keeps its contacts. The reset command brings back the sample data.
 3. Contacts can be filtered by status, and each record's page shows the records it's linked to.
 4. Dragging a deal to another column on the pipeline changes its stage and its probability of close, and the deals list shows both. A card dropped anywhere in a column, including higher or lower in its own column, stays there after a refresh. The board's and the columns' totals and expected revenue change as soon as the card moves. A deal added in a column starts at that stage, and late deals stand out. Moving a deal to Won or Lost sets its close date to today, and moving it to Lost asks for an optional reason. Won and Lost show only deals closed in the last 30 days.
 5. An activity or follow-up logged on a contact or deal appears in its timeline, newest first, and so does an entry for each change of stage. An activity on a deal also appears on its main contact's timeline. Follow-ups show on the dashboard as upcoming or overdue until they're marked done.
