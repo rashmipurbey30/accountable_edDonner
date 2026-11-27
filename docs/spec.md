@@ -183,7 +183,7 @@ JSON over `/api`. Errors use FastAPI's standard shape; a check that fails return
 | `POST`, `GET`, `PATCH`, `DELETE /api/deals/{id}`, `GET /api/deals/{id}/delete-impact` | As above. `PATCH` with a new stage applies D3, D4 and D7. |
 | `GET /api/deals/{id}/timeline` | Activities and stage changes |
 | `GET /api/pipeline` | Deals for the board by stage, in position order (Won and Lost limited per P2), with per-column and board totals |
-| `POST /api/deals/{id}/move` | `{stage, index, lost_reason?}`: change stage and place in one step |
+| `POST /api/deals/{id}/move` | `{stage, before_id, lost_reason?}`: change stage and place in one step. `before_id` is the deal the card was dropped above, or null for the bottom of the column, because Won and Lost hide older deals and a visible index wouldn't match the stored order |
 | `POST /api/activities` | Create, with `contact_id` or `deal_id` |
 | `PATCH /api/activities/{id}`, `DELETE /api/activities/{id}` | Edit (including `done`) and delete |
 | `GET /api/dashboard` | Everything the dashboard shows, in one response |

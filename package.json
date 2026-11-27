@@ -1,0 +1,19 @@
+{
+  "name": "accountable",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "node scripts/check-env.mjs && node scripts/dev.mjs",
+    "seed": "uv run python -m backend.app.seed",
+    "test": "node scripts/check-env.mjs && npm run test:frontend && npm run test:backend && npm run test:e2e",
+    "test:frontend": "npm run test -w frontend",
+    "test:backend": "uv run pytest",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "concurrently": "^10.0.7"
+  }
+}

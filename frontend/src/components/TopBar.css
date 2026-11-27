@@ -1,0 +1,68 @@
+.top {
+  background: var(--midnight);
+  color: var(--sea-mist);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.top .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 18px;
+  color: #fff;
+  text-decoration: none;
+}
+.top .logo {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--sea-green);
+  color: var(--midnight);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 700;
+}
+.top .nav {
+  display: flex;
+  gap: 4px;
+}
+.top .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 500;
+  color: var(--sea-mist);
+  text-decoration: none;
+}
+.top .nav-item svg {
+  width: 16px;
+  height: 16px;
+}
+.top .nav-item:hover {
+  background: rgb(205 216 219 / 0.08);
+}
+.top .nav-item.active {
+  background: rgb(6 214 160 / 0.16);
+  color: #fff;
+}
+.top .nav-item.active svg {
+  color: var(--sea-green);
+}
+.top :focus-visible {
+  outline-color: var(--sea-green);
+}
+@media (max-width: 1279px) {
+  .top .nav-label {
+    display: none;
+  }
+}

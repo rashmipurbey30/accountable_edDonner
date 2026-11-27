@@ -77,3 +77,10 @@ Thumbs.db
 logs/
 *.log
 tmp/
+
+# App data (the SQLite database and its backup)
+data/
+
+# Playwright output
+test-results/
+playwright-report/
